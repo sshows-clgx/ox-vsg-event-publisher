@@ -14,10 +14,12 @@ namespace eventPublisher.web.filters
     public class JwtFilter : ActionFilterAttribute
     {
         private IAuthorizeRequests _authorizeService;
+        private IManageClaims _claims;
 
-        public JwtFilter(IAuthorizeRequests authorizeService)
+        public JwtFilter(IAuthorizeRequests authorizeService, IManageClaims claims)
         {
             _authorizeService = authorizeService;
+            _claims = claims;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -36,8 +38,8 @@ namespace eventPublisher.web.filters
                         try
                         {
                             Identity identity = _authorizeService.ValidateRequestAsync(jwt).Result;
-                            // ClaimsPrincipal claimsPrincipal = _claims.CreateClaims(identity);
-                            // context.HttpContext.User = claimsPrincipal;
+                            ClaimsPrincipal claimsPrincipal = _claims.CreateClaims(identity);
+                            context.HttpContext.User = claimsPrincipal;
                             return;
                         }
                         catch (AggregateException exs)

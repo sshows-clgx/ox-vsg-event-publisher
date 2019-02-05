@@ -29,10 +29,12 @@ namespace eventPublisher.web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-             services.AddTransient<IManageJwts, JwtManager>();
+            services.AddTransient<IManageJwts, JwtManager>();
+            services.AddTransient<IManageClaims, ClaimsManager>();
             services.AddTransient<IAuthorizeRequests, AuthorizationService>();
             services.AddTransient<IRepository, EventPublisherRepository>();
             services.AddDbContext<EventPublisherContext>(options => options.UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher"));
+            services.AddTransient<IPublishEvents, EventPublisher>();
             
             services.AddMvc().AddXmlSerializerFormatters();
 

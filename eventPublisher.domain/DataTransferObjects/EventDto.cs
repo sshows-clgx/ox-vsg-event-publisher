@@ -4,7 +4,7 @@ namespace eventPublisher.domain.dataTransferObjects
 {
     public class EventDto
     {
-        public Event Event { get; set; }
+        public int EventId { get; set; }
         public string Data { get; set; }
     }
 }

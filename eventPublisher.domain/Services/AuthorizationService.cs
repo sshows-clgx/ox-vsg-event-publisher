@@ -7,14 +7,14 @@ using eventPublisher.domain.models;
 
 namespace eventPublisher.domain.services
 {
-    public class AuthorizationService: IAuthorizeRequests
+    public class AuthorizationService : IAuthorizeRequests
     {
         private IManageJwts _jwtManager;
         private IRepository _repository;
         public AuthorizationService(IManageJwts jwtManager, IRepository repository)
         {
-            _jwtManager = jwtManager;
-            _repository = repository;
+            _jwtManager = jwtManager ?? throw new ArgumentNullException("jwtManager");
+            _repository = repository ?? throw new ArgumentNullException("repository");
         }
 
         public async Task<Identity> ValidateRequestAsync(string jwt)
@@ -27,7 +27,7 @@ namespace eventPublisher.domain.services
 
             // check if Application is configured in EventPublisher
             Application application = await _repository.GetApplicationAsync(fncConnectResult.JwtData.AppInfo.ImmutableAppID).ConfigureAwait(false);
-            if (application == null) throw new InvalidJwtException(string.Format("Application {0} is not configured.", appInfo.AppName));
+            if (application == null) throw new NotAuthorizedException(string.Format("Application {0} is not configured.", appInfo.AppName));
 
             return new Identity()
             {
