@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace eventPublisher.data.Migrations
 {
-    public partial class Init : Migration
+    public partial class ApplicationIdAsFncConnectId : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,7 +15,7 @@ namespace eventPublisher.data.Migrations
                     event_id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     name = table.Column<string>(nullable: true),
-                    application_id = table.Column<int>(nullable: false),
+                    application_id = table.Column<long>(nullable: false),
                     inserted_utc = table.Column<DateTime>(nullable: false, defaultValueSql: "now() at time zone 'utc'")
                 },
                 constraints: table =>
@@ -27,7 +27,7 @@ namespace eventPublisher.data.Migrations
                 name: "applications",
                 columns: table => new
                 {
-                    application_id = table.Column<int>(nullable: false)
+                    application_id = table.Column<long>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     name = table.Column<string>(nullable: true),
                     inserted_utc = table.Column<DateTime>(nullable: false, defaultValueSql: "now() at time zone 'utc'")

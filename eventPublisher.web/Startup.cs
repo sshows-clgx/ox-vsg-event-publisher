@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using eventPublisher.data;
+using eventPublisher.domain.contracts;
+using eventPublisher.domain.services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +29,11 @@ namespace eventPublisher.web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<EventPublisherContext>(options => options.UseNpgsql(Configuration["POSTGRESDB"]));
+             services.AddTransient<IManageJwts, JwtManager>();
+            services.AddTransient<IAuthorizeRequests, AuthorizationService>();
+            services.AddTransient<IRepository, EventPublisherRepository>();
+            services.AddDbContext<EventPublisherContext>(options => options.UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher"));
+            
             services.AddMvc().AddXmlSerializerFormatters();
 
             // Swagger
@@ -47,7 +53,6 @@ namespace eventPublisher.web
                     { "Bearer", new string[] { } }
                 });
             });
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

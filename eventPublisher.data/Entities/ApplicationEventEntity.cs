@@ -10,7 +10,7 @@ namespace eventPublisher.data.entities
         public int EventId { get; set; }
         public string Name { get; set; }
         [ForeignKey("Application")]
-        public int ApplicationId { get; set; }
+        public long ApplicationId { get; set; }
         public virtual ApplicationEntity Application { get; }
         public DateTime InsertedUtc { get; set; }
 

@@ -10,8 +10,8 @@ using eventPublisher.data;
 namespace eventPublisher.data.Migrations
 {
     [DbContext(typeof(EventPublisherContext))]
-    [Migration("20190205175629_Init")]
-    partial class Init
+    [Migration("20190205193343_ApplicationIdAsFncConnectId")]
+    partial class ApplicationIdAsFncConnectId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,7 +23,7 @@ namespace eventPublisher.data.Migrations
 
             modelBuilder.Entity("eventPublisher.data.entities.ApplicationEntity", b =>
                 {
-                    b.Property<int>("ApplicationId")
+                    b.Property<long>("ApplicationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("application_id");
 
@@ -47,7 +47,7 @@ namespace eventPublisher.data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("event_id");
 
-                    b.Property<int>("ApplicationId")
+                    b.Property<long>("ApplicationId")
                         .HasColumnName("application_id");
 
                     b.Property<DateTime>("InsertedUtc")
