@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace eventPublisher.web
 {
@@ -26,8 +27,27 @@ namespace eventPublisher.web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddXmlSerializerFormatters();
             services.AddDbContext<EventPublisherContext>(options => options.UseNpgsql(Configuration["POSTGRESDB"]));
+            services.AddMvc().AddXmlSerializerFormatters();
+
+            // Swagger
+            services.AddSwaggerGen(c =>
+            {
+                c.DescribeAllEnumsAsStrings();
+                c.SwaggerDoc("v1", new Info { Title = "Event Publisher Service API", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme()
+                {
+                    In = "header",
+                    Description = "Please insert JWT with Bearer into field. <br/>Example: Bearer yourJwt",
+                    Name = "Authorization",
+                    Type = "apiKey"
+                });
+                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
+                {
+                    { "Bearer", new string[] { } }
+                });
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +58,13 @@ namespace eventPublisher.web
                 app.UseDeveloperExceptionPage();
             }
 
+            // Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Event Publisher Service API V1");
+
+            });
 
             app.UseStaticFiles();
             app.UseMvc();
