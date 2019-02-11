@@ -8,8 +8,8 @@ using eventPublisher.domain.models;
 namespace eventPublisher.data {
     public class EventPublisherRepository : IRepository
     {
-        private EventPublisherContext _context;
-        public EventPublisherRepository(EventPublisherContext eventPublisherContext)
+        private IContext _context;
+        public EventPublisherRepository(IContext eventPublisherContext)
         {
             _context = eventPublisherContext ?? throw new ArgumentNullException("EventPublisherContext");
         }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace eventPublisher.data
 {
-    public class EventPublisherContext : DbContext
+    public class EventPublisherContext : DbContext, IContext
     {
         public EventPublisherContext() : this(new DbContextOptionsBuilder<EventPublisherContext>().UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher").Options)
         {

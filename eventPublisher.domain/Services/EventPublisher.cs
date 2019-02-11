@@ -5,6 +5,7 @@ using eventPublisher.domain.dataTransferObjects;
 using eventPublisher.domain.exceptions;
 using eventPublisher.domain.models;
 using eventPublisher.domain.utilities;
+using Newtonsoft.Json;
 
 namespace eventPublisher.domain.services
 {
@@ -24,6 +25,9 @@ namespace eventPublisher.domain.services
                 ApplicationEvent applicationEvent = _repository.GetApplicationEvent(identity.Id, eventId);
                 if (applicationEvent == null) throw new NotFoundException("Application Event was not found.");
                 
+                var output = "dotnet ../eventPublisher.producer/bin/debug/netcoreapp2.0/eventPublisher.producer.dll test test2".Bash();
+
+
                 return correlationId;
             }).ConfigureAwait(false);
         }

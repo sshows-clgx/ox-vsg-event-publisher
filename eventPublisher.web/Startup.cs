@@ -33,9 +33,8 @@ namespace eventPublisher.web
             services.AddTransient<IManageClaims, ClaimsManager>();
             services.AddTransient<IAuthorizeRequests, AuthorizationService>();
             services.AddTransient<IRepository, EventPublisherRepository>();
-            services.AddDbContext<EventPublisherContext>(options => options.UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher"));
+            services.AddDbContext<IContext, EventPublisherContext>(options => options.UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher"));
             services.AddTransient<IPublishEvents, EventPublisher>();
-            
             services.AddMvc().AddXmlSerializerFormatters();
 
             // Swagger
