@@ -27,13 +27,18 @@ namespace eventPublisher.web
 				// if not an InMemory database, migrate
 				if (!provider.Contains("InMemory")) 
 				{
-					((IContext)services.GetService(typeof(IContext))).Migrate();
-					
+					context.Migrate();
+					List<string> topics = context.Topics.Select(t => t.Name).ToList();
+					topics.ForEach(topic => {
+						var bashResult = $"kafka-topics --create --topic {topic} --zookeeper 127.0.0.1:2181 --partitions 1 --replication-factor 1".Bash();
+					});
 				}
 			}
 
+			var output = "dotnet ../eventPublisher.consumer/bin/debug/netcoreapp2.0/eventPublisher.consumer.dll".Bash();
+
 			// var confluentStart = "confluent start".Bash();
-			var topic = "kafka-topics --create --topic verificationtopic --zookeeper 127.0.0.1:2181 --partitions 1 --replication-factor 1".Bash();
+			// var topic = "kafka-topics --create --topic verificationtopic --zookeeper 127.0.0.1:2181 --partitions 1 --replication-factor 1".Bash();
             host.Run();
         }
 

@@ -9,10 +9,13 @@ namespace eventPublisher.data.entities
         [Key]
         public int EventId { get; set; }
         public string Name { get; set; }
-        [ForeignKey("Application")]
+        public int TopicId { get; set; }
         public long ApplicationId { get; set; }
-        public virtual ApplicationEntity Application { get; }
         public DateTime InsertedUtc { get; set; }
 
+        [ForeignKey("ApplicationId")]
+        public virtual ApplicationEntity ApplicationNav { get; set; }
+        [ForeignKey("TopicId")]
+        public virtual TopicEntity TopicNav { get; set; }
     }
 }

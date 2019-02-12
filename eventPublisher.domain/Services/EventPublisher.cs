@@ -25,9 +25,7 @@ namespace eventPublisher.domain.services
                 ApplicationEvent applicationEvent = _repository.GetApplicationEvent(identity.Id, eventId);
                 if (applicationEvent == null) throw new NotFoundException("Application Event was not found.");
                 
-                var output = "dotnet ../eventPublisher.producer/bin/debug/netcoreapp2.0/eventPublisher.producer.dll test test2".Bash();
-
-
+                var output = $"dotnet ../eventPublisher.producer/bin/debug/netcoreapp2.0/eventPublisher.producer.dll {applicationEvent.TopicName} {JsonConvert.SerializeObject(data)}".Bash();
                 return correlationId;
             }).ConfigureAwait(false);
         }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using eventPublisher.data;
@@ -9,9 +10,10 @@ using eventPublisher.data;
 namespace eventPublisher.data.Migrations
 {
     [DbContext(typeof(EventPublisherContext))]
-    partial class EventPublisherContextModelSnapshot : ModelSnapshot
+    [Migration("20190212154143_AddTopics")]
+    partial class AddTopics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,9 +64,6 @@ namespace eventPublisher.data.Migrations
                     b.HasKey("EventId")
                         .HasName("pk_application_events");
 
-                    b.HasIndex("TopicId")
-                        .HasName("ix_application_events_topic_id");
-
                     b.ToTable("application_events");
                 });
 
@@ -86,15 +85,6 @@ namespace eventPublisher.data.Migrations
                         .HasName("pk_topics");
 
                     b.ToTable("topics");
-                });
-
-            modelBuilder.Entity("eventPublisher.data.entities.ApplicationEventEntity", b =>
-                {
-                    b.HasOne("eventPublisher.data.entities.TopicEntity")
-                        .WithMany("ApplicationEvents")
-                        .HasForeignKey("TopicId")
-                        .HasConstraintName("fk_application_events_topics_topic_id")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

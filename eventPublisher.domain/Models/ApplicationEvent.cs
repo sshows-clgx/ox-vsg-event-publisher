@@ -4,10 +4,14 @@ namespace eventPublisher.domain.models
     {
         private long _applicationId;
         private int _eventId;
+        private string _topicName;
 
-        public ApplicationEvent(long applicationId, int eventId) {
+        public ApplicationEvent(long applicationId, int eventId, string topicName) {
             _applicationId = applicationId;
             _eventId = eventId;
+            _topicName = topicName;
         }
+
+        public string TopicName => _topicName;
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using eventPublisher.data;
@@ -9,9 +10,10 @@ using eventPublisher.data;
 namespace eventPublisher.data.Migrations
 {
     [DbContext(typeof(EventPublisherContext))]
-    partial class EventPublisherContextModelSnapshot : ModelSnapshot
+    [Migration("20190212173313_EventForeignKeys2")]
+    partial class EventForeignKeys2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

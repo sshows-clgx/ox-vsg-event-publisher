@@ -18,6 +18,7 @@ namespace eventPublisher.data
 
         public DbSet<ApplicationEntity> Applications { get; set; }
         public DbSet<ApplicationEventEntity> ApplicationEvents { get; set; }
+        public DbSet<TopicEntity> Topics { get; set; }
 
         public string ProviderName => base.Database.ProviderName;
 
@@ -39,6 +40,10 @@ namespace eventPublisher.data
             modelBuilder.Entity<ApplicationEventEntity>()
                 .Property(b => b.InsertedUtc)
                 .HasDefaultValueSql("now() at time zone 'utc'");
+
+            modelBuilder.Entity<TopicEntity>()
+            .Property(b => b.InsertedUtc)
+            .HasDefaultValueSql("now() at time zone 'utc'");
 
             // Postgres is lame. We have to put _ between our table/column names to allow readablitiy (to not be more lame)
             base.OnModelCreating(modelBuilder);

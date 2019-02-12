@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using eventPublisher.data.entities;
 using eventPublisher.domain.contracts;
 using eventPublisher.domain.models;
+using Microsoft.EntityFrameworkCore;
 
 namespace eventPublisher.data {
     public class EventPublisherRepository : IRepository
@@ -26,8 +28,13 @@ namespace eventPublisher.data {
 
         public ApplicationEvent GetApplicationEvent(long applicationId, int eventId)
         {
-            ApplicationEventEntity entity = _context.ApplicationEvents.SingleOrDefault(x => x.EventId == eventId && x.ApplicationId == applicationId);
-            return entity == null ? null : new ApplicationEvent(entity.ApplicationId, entity.EventId);
+            ApplicationEventEntity entity = _context.ApplicationEvents.Include("TopicNav").SingleOrDefault(x => x.EventId == eventId && x.ApplicationId == applicationId);
+            return entity == null ? null : new ApplicationEvent(entity.ApplicationId, entity.EventId, entity.TopicNav.Name);
+        }
+
+        public IEnumerable<string> GetTopics()
+        {
+            return _context.Topics.Select(t => t.Name);
         }
     }
 }

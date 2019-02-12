@@ -9,6 +9,7 @@ namespace eventPublisher.data
     {
         DbSet<ApplicationEntity> Applications { get; }
         DbSet<ApplicationEventEntity> ApplicationEvents { get; }
+        DbSet<TopicEntity> Topics { get; }
         string ProviderName { get; }
 
         void Migrate();
