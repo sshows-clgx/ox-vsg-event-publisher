@@ -23,16 +23,12 @@ namespace eventPublisher.web
 			{
 				IServiceProvider services = scope.ServiceProvider;
 				var context = ((IContext)services.GetService(typeof(IContext)));
-				var publisher = ((IPublishEvents)services.GetService(typeof(IPublishEvents)));
-				var consumer = ((IConsumeEvents)services.GetService(typeof(IConsumeEvents)));
 				var provider = context.ProviderName;
 
 				// if not an InMemory database, migrate
 				if (!provider.Contains("InMemory")) 
 				{
 					context.Migrate();
-					consumer.Consume();
-					// publisher.SubscribeToTopics();
 				}
 			}
 

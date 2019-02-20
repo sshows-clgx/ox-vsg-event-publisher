@@ -4,6 +4,6 @@ namespace eventPublisher.domain.contracts
 {
     public interface IConsumeEvents
     {
-        void Consume();
+        void ReceiveEvents();
     }
 }

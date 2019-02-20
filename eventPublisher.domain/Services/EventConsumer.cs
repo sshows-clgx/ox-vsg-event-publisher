@@ -32,11 +32,11 @@ namespace eventPublisher.domain.services
             _topics = _repository.GetTopics();
         }
 
-        public void Consume()
+        public void ReceiveEvents()
         {
             using (Consumer<string, string> c = new ConsumerBuilder<string, string>(_config).Build())
             {
-                c.Subscribe(_topics);
+                if(_topics.Any()) c.Subscribe(_topics);
                 CancellationTokenSource cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (_, e) =>
                 {

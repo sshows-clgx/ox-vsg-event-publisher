@@ -5,6 +5,10 @@ using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
 using eventPublisher.data;
+using eventPublisher.domain.contracts;
+using eventPublisher.domain.services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace eventPublisher.consumer
 {
@@ -12,47 +16,64 @@ namespace eventPublisher.consumer
     {
         public static void Main(string[] args)
         {
-            var conf = new ConsumerConfig
-            {
-                GroupId = "test-consumer-group",
-                BootstrapServers = "localhost:9092",
-                // Note: The AutoOffsetReset property determines the start offset in the event
-                // there are not yet any committed offsets for the consumer group for the
-                // topic/partitions of interest. By default, offsets are committed
-                // automatically, so in this example, consumption will only start from the
-                // earliest message in the topic 'my-topic' the first time you run the program.
-                AutoOffsetReset = AutoOffsetResetType.Earliest
-            };
+            ServiceProvider serviceProvider = ConfigureServices();
+            serviceProvider.GetService<IConsumeEvents>().ReceiveEvents();
+            // var config = new ConsumerConfig
+            // {
+            //     GroupId = "test-consumer-group",
+            //     BootstrapServers = "localhost:9092",
+            //     // Note: The AutoOffsetReset property determines the start offset in the event
+            //     // there are not yet any committed offsets for the consumer group for the
+            //     // topic/partitions of interest. By default, offsets are committed
+            //     // automatically, so in this example, consumption will only start from the
+            //     // earliest message in the topic 'my-topic' the first time you run the program.
+            //     AutoOffsetReset = AutoOffsetReset.Earliest
+            // };
 
-            using (var c = new Consumer<Ignore, string>(conf))
-            {
-                using (var context = new EventPublisherContext())
-                {
-                    List<string> topics = context.Topics.Select(t => t.Name).ToList();
-                    c.Subscribe(topics);
+            // var topics = serviceProvider.GetService<IRepository>().GetTopics();
 
-                    bool consuming = true;
-                    // The client will automatically recover from non-fatal errors. You typically
-                    // don't need to take any action unless an error is marked as fatal.
-                    c.OnError += (_, e) => consuming = !e.IsFatal;
+            // using (var c = new ConsumerBuilder<string, string>(config).Build())
+            // {
+            //     if (topics.Any()) c.Subscribe(topics);
 
-                    while (consuming)
-                    {
-                        try
-                        {
-                            var cr = c.Consume();
-                            Console.WriteLine($"Consumed message '{cr.Value}' at: '{cr.TopicPartitionOffset}'.");
-                        }
-                        catch (ConsumeException e)
-                        {
-                            Console.WriteLine($"Error occured: {e.Error.Reason}");
-                        }
-                    }
+            //     CancellationTokenSource cts = new CancellationTokenSource();
+            //     Console.CancelKeyPress += (_, e) =>
+            //     {
+            //         e.Cancel = true; // prevent the process from terminating.
+            //         cts.Cancel();
+            //     };
 
-                    // Ensure the consumer leaves the group cleanly and final offsets are committed.
-                    c.Close();
-                }
-            }
+            //     try
+            //     {
+            //         while (true)
+            //         {
+            //             try
+            //             {
+            //                 var cr = c.Consume(cts.Token);
+            //                 Console.WriteLine($"Consumed message '{cr.Value}' at: '{cr.TopicPartitionOffset}'.");
+            //             }
+            //             catch (ConsumeException e)
+            //             {
+            //                 Console.WriteLine($"Error occured: {e.Error.Reason}");
+            //             }
+            //         }
+            //     }
+            //     catch (OperationCanceledException)
+            //     {
+            //         // Ensure the consumer leaves the group cleanly and final offsets are committed.
+            //         c.Close();
+            //     }
+            // }
+        }
+
+        private static ServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+            services.AddTransient<IConsumeEvents, EventConsumer>();
+            services.AddTransient<IRepository, EventPublisherRepository>();
+            services.AddDbContext<IContext, EventPublisherContext>(options => options.UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher"));
+
+            return services.BuildServiceProvider();
         }
     }
 }

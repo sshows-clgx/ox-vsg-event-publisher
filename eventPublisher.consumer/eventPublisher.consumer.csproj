@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.0-beta2" />
+    <PackageReference Include="Confluent.Kafka" Version="1.0-beta3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\eventPublisher.data\eventPublisher.data.csproj" />
+    <ProjectReference Include="..\eventPublisher.domain\eventPublisher.domain.csproj" />
   </ItemGroup>
 
 
