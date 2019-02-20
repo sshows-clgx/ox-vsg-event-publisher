@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using eventPublisher.domain.contracts;
 using eventPublisher.domain.dataTransferObjects;
@@ -12,10 +13,12 @@ namespace eventPublisher.domain.services
     public class EventPublisher : IPublishEvents
     {
         private IRepository _repository;
+        private IProduceEvents _producer;
 
-        public EventPublisher(IRepository repository)
+        public EventPublisher(IRepository repository, IProduceEvents producer)
         {
             _repository = repository ?? throw new ArgumentNullException("repository");
+            _producer = producer ?? throw new ArgumentNullException("producer");
         }
 
         public async Task<Either<HttpStatusCodeErrorResponse, Guid>> PublishEventAsync<T>(Guid correlationId, Identity identity, int eventId, T data)
@@ -24,8 +27,9 @@ namespace eventPublisher.domain.services
             {
                 ApplicationEvent applicationEvent = _repository.GetApplicationEvent(identity.Id, eventId);
                 if (applicationEvent == null) throw new NotFoundException("Application Event was not found.");
+
+                _producer.SendEvent(applicationEvent.TopicName, JsonConvert.SerializeObject(data));
                 
-                var output = $"dotnet ../eventPublisher.producer/bin/debug/netcoreapp2.0/eventPublisher.producer.dll {applicationEvent.TopicName} {JsonConvert.SerializeObject(data)}".Bash();
                 return correlationId;
             }).ConfigureAwait(false);
         }

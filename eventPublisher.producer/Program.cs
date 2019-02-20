@@ -15,12 +15,12 @@ namespace eventPublisher.producer
 
                 var conf = new ProducerConfig { BootstrapServers = "localhost:9092" };
 
-                Action<DeliveryReport<Null, string>> handler = r =>
+                Action<DeliveryReportResult<Null, string>> handler = r =>
                     Console.WriteLine(!r.Error.IsError
                         ? $"Delivered message to {r.TopicPartitionOffset}"
                         : $"Delivery Error: {r.Error.Reason}");
 
-                using (var p = new ProducerBuilder<Null, string>(conf).Build())
+                using (var p = new Producer<Null, string>(conf))
                 {
                     p.BeginProduce(topic, new Message<Null, string> { Value = data }, handler);
 

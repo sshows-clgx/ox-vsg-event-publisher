@@ -21,37 +21,31 @@ namespace eventPublisher.consumer
                 // topic/partitions of interest. By default, offsets are committed
                 // automatically, so in this example, consumption will only start from the
                 // earliest message in the topic 'my-topic' the first time you run the program.
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetResetType.Earliest
             };
 
-            using (var c = new ConsumerBuilder<Ignore, string>(conf).Build())
+            using (var c = new Consumer<Ignore, string>(conf))
             {
                 using (var context = new EventPublisherContext())
                 {
                     List<string> topics = context.Topics.Select(t => t.Name).ToList();
                     c.Subscribe(topics);
 
-                    CancellationTokenSource cts = new CancellationTokenSource();
-                    Console.CancelKeyPress += (_, e) =>
-                    {
-                        e.Cancel = true; // prevent the process from terminating.
-                        cts.Cancel();
-                    };
+                    bool consuming = true;
+                    // The client will automatically recover from non-fatal errors. You typically
+                    // don't need to take any action unless an error is marked as fatal.
+                    c.OnError += (_, e) => consuming = !e.IsFatal;
 
-                    while (!cts.IsCancellationRequested)
+                    while (consuming)
                     {
                         try
                         {
-                            var cr = c.Consume(cts.Token);
+                            var cr = c.Consume();
                             Console.WriteLine($"Consumed message '{cr.Value}' at: '{cr.TopicPartitionOffset}'.");
                         }
                         catch (ConsumeException e)
                         {
                             Console.WriteLine($"Error occured: {e.Error.Reason}");
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
                         }
                     }
 
