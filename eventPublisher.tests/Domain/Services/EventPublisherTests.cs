@@ -55,20 +55,21 @@ namespace eventPublisher.tests.domain.services
         {
             // arrange 
             ResetMocks();
-            ApplicationEvent applicationEvent = new ApplicationEvent(1, 1, "Topic");
+            int eventId = 1;
+            ApplicationEvent applicationEvent = new ApplicationEvent(1, eventId, "Topic");
             var data = new object();
             _repo.Setup(x => x.GetApplicationEvent(It.IsAny<long>(), It.IsAny<int>())).Returns(applicationEvent);
             var target = new EventPublisher(_repo.Object, _producer.Object);
 
             //act
-            var result = await target.PublishEventAsync<object>(Guid.NewGuid(), new Identity(), 1, data);
+            var result = await target.PublishEventAsync<object>(Guid.NewGuid(), new Identity(), eventId, data);
 
             // assert
             result.Match(
                 err => { },
                 x =>
                 {
-                    _producer.Verify(s => s.SendEvent(applicationEvent.TopicName, JsonConvert.SerializeObject(data)), Times.Once);
+                    _producer.Verify(s => s.SendEvent(applicationEvent.TopicName, eventId, JsonConvert.SerializeObject(data)), Times.Once);
                 }
             );
         }

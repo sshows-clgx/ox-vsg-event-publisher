@@ -28,7 +28,7 @@ namespace eventPublisher.domain.services
                 ApplicationEvent applicationEvent = _repository.GetApplicationEvent(identity.Id, eventId);
                 if (applicationEvent == null) throw new NotFoundException("Application Event was not found.");
 
-                _producer.SendEvent(applicationEvent.TopicName, JsonConvert.SerializeObject(data));
+                _producer.SendEvent(applicationEvent.TopicName, eventId, JsonConvert.SerializeObject(data));
                 
                 return correlationId;
             }).ConfigureAwait(false);
