@@ -16,6 +16,7 @@ namespace eventPublisher.domain.services
     public class EventConsumer : IConsumeEvents
     {
         private IRepository _repository;
+        private int _httpAttempt;
 
         public EventConsumer(IRepository repository)
         {
@@ -48,7 +49,7 @@ namespace eventPublisher.domain.services
                     IEnumerable<Subscription> subscriptions = _repository.GetSubscriptions(eventId);
                     foreach (var subscription in subscriptions)
                     {
-                        await HandleSubscription(subscription, message).ConfigureAwait(false);
+                        await HandleSubscriptionAsync(subscription, message).ConfigureAwait(false);
                     }
                     channel.BasicAck(deliveryTag: @event.DeliveryTag, multiple: false);
                 };
@@ -61,13 +62,27 @@ namespace eventPublisher.domain.services
             }
         }
 
-        private async Task HandleSubscription(Subscription subscription, string message)
+        private async Task HandleSubscriptionAsync(Subscription subscription, string message)
         {
+            _httpAttempt = 0;
+            while (_httpAttempt < 5)
+            {
+                HttpResponseMessage response = await MakeHttpPostAsync(subscription, message).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode) return; // todo: log
+                if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 500) return; // todo: log
+            }
+        }
+
+        private async Task<HttpResponseMessage> MakeHttpPostAsync(Subscription subscription, string message)
+        {
+            _httpAttempt++;
             using (var httpClient = new HttpClient())
             {
                 var content = new StringContent(message, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await httpClient.PostAsync(subscription.CallbackUrl, content).ConfigureAwait(false);
-                Console.WriteLine(" HTTP Response from {0}: {1}", subscription.CallbackUrl, response.StatusCode);
+                Console.WriteLine(" HTTP Response from {0}: {1}", subscription.CallbackUrl, (int)response.StatusCode);
+
+                return response;
             }
         }
     }
