@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using eventPublisher.data;
@@ -9,9 +10,10 @@ using eventPublisher.data;
 namespace eventPublisher.data.Migrations
 {
     [DbContext(typeof(EventPublisherContext))]
-    partial class EventPublisherContextModelSnapshot : ModelSnapshot
+    [Migration("20190222173247_AddFailedCommandCallbackUrl")]
+    partial class AddFailedCommandCallbackUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,31 +76,6 @@ namespace eventPublisher.data.Migrations
                     b.ToTable("application_events");
                 });
 
-            modelBuilder.Entity("eventPublisher.data.entities.SubscriptionEntity", b =>
-                {
-                    b.Property<int>("EventId")
-                        .HasColumnName("event_id");
-
-                    b.Property<long>("ApplicationId")
-                        .HasColumnName("application_id");
-
-                    b.Property<string>("CallbackUrl")
-                        .HasColumnName("callback_url");
-
-                    b.Property<DateTime>("InsertedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnName("inserted_utc")
-                        .HasDefaultValueSql("now() at time zone 'utc'");
-
-                    b.HasKey("EventId", "ApplicationId")
-                        .HasName("pk_subscriptions");
-
-                    b.HasIndex("ApplicationId")
-                        .HasName("ix_subscriptions_application_id");
-
-                    b.ToTable("subscriptions");
-                });
-
             modelBuilder.Entity("eventPublisher.data.entities.TopicEntity", b =>
                 {
                     b.Property<int>("TopicId")
@@ -131,21 +108,6 @@ namespace eventPublisher.data.Migrations
                         .WithMany("ApplicationEvents")
                         .HasForeignKey("TopicId")
                         .HasConstraintName("fk_application_events_topics_topic_id")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("eventPublisher.data.entities.SubscriptionEntity", b =>
-                {
-                    b.HasOne("eventPublisher.data.entities.ApplicationEntity", "ApplicationNav")
-                        .WithMany()
-                        .HasForeignKey("ApplicationId")
-                        .HasConstraintName("fk_subscriptions_applications_application_id")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("eventPublisher.data.entities.ApplicationEventEntity", "ApplicationEventNav")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .HasConstraintName("fk_subscriptions_application_events_event_id")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

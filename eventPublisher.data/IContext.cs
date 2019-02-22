@@ -10,6 +10,7 @@ namespace eventPublisher.data
         DbSet<ApplicationEntity> Applications { get; }
         DbSet<ApplicationEventEntity> ApplicationEvents { get; }
         DbSet<TopicEntity> Topics { get; }
+        DbSet<SubscriptionEntity> Subscriptions { get; set; }
         string ProviderName { get; }
 
         void Migrate();
