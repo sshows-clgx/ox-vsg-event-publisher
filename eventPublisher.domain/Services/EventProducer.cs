@@ -1,31 +1,28 @@
 using System;
-using Confluent.Kafka;
+using System.Text;
 using eventPublisher.domain.contracts;
+using RabbitMQ.Client;
 
 namespace eventPublisher.domain.services
 {
-    public class EventProducer: IProduceEvents
+    public class EventProducer : IProduceEvents
     {
-        private ProducerConfig _config;
-
-        public EventProducer() {
-            _config = new ProducerConfig { BootstrapServers = "localhost:9092" };
+        public EventProducer()
+        {
         }
+
         public void SendEvent(string topic, string data)
         {
-            Action<DeliveryReport<Null, string>> handler = r => 
-            Console.WriteLine(!r.Error.IsError
-                ? $"Delivered message to {r.TopicPartitionOffset}"
-                : $"Delivery Error: {r.Error.Reason}");
-
-            using (var p = new ProducerBuilder<Null, string>(_config).Build())
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
             {
-                p.BeginProduce(topic, new Message<Null, string> { Value = data }, handler);
+                channel.QueueDeclare(queue: topic, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
-                // wait for up to 10 seconds for any inflight messages to be delivered.
-                p.Flush(TimeSpan.FromSeconds(10));
+                var body = Encoding.UTF8.GetBytes(data);
+                channel.BasicPublish(exchange: "", routingKey: topic, basicProperties: null, body: body);
+                Console.WriteLine(" [x] Sent {0}", body);
             }
-
         }
     }
 }

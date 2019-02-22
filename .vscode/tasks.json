@@ -8,7 +8,7 @@
         {
             "label": "build",
 			"command": "dotnet",
-			"type": "process",
+            "type": "process",
             "args" : ["build", "--configuration", "Debug"],
             "problemMatcher": "$msCompile",
             "group": {

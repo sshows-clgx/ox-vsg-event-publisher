@@ -1,7 +1,7 @@
 ---
 applications:
-- name: event-service-publisher
-  host: event-service-publisher-sb
+- name: event-service-producer
+  host: event-service-producer-sb
   path: ../eventPublisher.web/bin/Debug/netcoreapp2.0/publish/
 - name: event-service-consumer
   host: event-service-consumer-sb
@@ -13,6 +13,6 @@ domain: clgxlabs.net
 buildpack: dotnet-core_buildpack-cached-v1_0_25
 timeout: 180
 services:
-
+ - event-service
 env:
   ASPNETCORE_ENVIRONMENT: sb
