@@ -16,7 +16,8 @@ namespace eventPublisher.consumer
         public static void Main(string[] args)
         {
             ServiceProvider serviceProvider = ConfigureServices();
-            serviceProvider.GetService<IConsumeEvents>().ReceiveEvents();
+            IConsumeEvents consumer = serviceProvider.GetService<IConsumeEvents>();
+            consumer.ReceiveEvents();
         }
 
         private static ServiceProvider ConfigureServices()

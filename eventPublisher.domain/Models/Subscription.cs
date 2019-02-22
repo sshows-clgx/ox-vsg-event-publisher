@@ -14,5 +14,9 @@ namespace eventPublisher.domain.models
             _callbackUrl = callbackUrl;
             _failedCommandCallbackUrl = failedCommandCallbackUrl;
         }
+
+        public string CallbackUrl => _callbackUrl;
+        public string FailedCommandCallbackUrl => _failedCommandCallbackUrl;
+        public long ApplicationId => _applicationId;
     }
 }
