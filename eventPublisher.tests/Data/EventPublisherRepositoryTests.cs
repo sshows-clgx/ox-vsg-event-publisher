@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using eventPublisher.data;
 using eventPublisher.data.entities;
@@ -143,6 +144,71 @@ namespace eventPublisher.tests.data
 
             // assert
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task EventPublisherRepository_GetSubscriptions_ReturnsSubscriptions()
+        {
+            // arrange
+            EventPublisherContext context = GetContext();
+
+            // applications
+            var applicationId1 = context.Applications.Add(new ApplicationEntity
+            {
+                Name = "Application 1"
+            }).Entity.ApplicationId;
+            var applicationId2 = context.Applications.Add(new ApplicationEntity
+            {
+                Name = "Application 2"
+            }).Entity.ApplicationId;
+
+            var topicId = context.Topics.Add(new TopicEntity
+            {
+                Name = "Test",
+            }).Entity.TopicId;
+
+            // events
+            var eventId1 = context.ApplicationEvents.Add(new ApplicationEventEntity
+            {
+                ApplicationId = applicationId1,
+                Name = "Test",
+                TopicId = topicId
+            }).Entity.EventId;
+            var eventId2 = context.ApplicationEvents.Add(new ApplicationEventEntity
+            {
+                ApplicationId = applicationId1,
+                Name = "Test2",
+                TopicId = topicId
+            }).Entity.EventId;
+
+            // subscriptions
+            context.Subscriptions.Add(new SubscriptionEntity
+            {
+                ApplicationId = applicationId1,
+                EventId = eventId1,
+                CallbackUrl = "https://google.com"
+            });
+            context.Subscriptions.Add(new SubscriptionEntity
+            {
+                ApplicationId = applicationId2,
+                EventId = eventId1,
+                CallbackUrl = "https://google.com"
+            });
+            context.Subscriptions.Add(new SubscriptionEntity
+            {
+                ApplicationId = applicationId2,
+                EventId = eventId2,
+                CallbackUrl = "https://google.com"
+            });
+
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            var target = new EventPublisherRepository(context);
+
+            // act
+            IEnumerable<Subscription> result = target.GetSubscriptions(eventId1);
+
+            // assert
+            Assert.Equal(2, result.Count());
         }
 
         private EventPublisherContext GetContext()

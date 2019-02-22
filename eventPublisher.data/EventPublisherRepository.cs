@@ -7,7 +7,8 @@ using eventPublisher.domain.contracts;
 using eventPublisher.domain.models;
 using Microsoft.EntityFrameworkCore;
 
-namespace eventPublisher.data {
+namespace eventPublisher.data
+{
     public class EventPublisherRepository : IRepository
     {
         private IContext _context;
@@ -30,6 +31,14 @@ namespace eventPublisher.data {
         {
             ApplicationEventEntity entity = _context.ApplicationEvents.Include("TopicNav").SingleOrDefault(x => x.EventId == eventId && x.ApplicationId == applicationId);
             return entity == null ? null : new ApplicationEvent(entity.ApplicationId, entity.EventId, entity.TopicNav.Name);
+        }
+
+        public IEnumerable<Subscription> GetSubscriptions(int eventId)
+        {
+            return _context.Subscriptions.Include("ApplicationEventNav")
+                .Where(s => s.EventId == eventId)
+                .Select(x => new Subscription(x.EventId, x.ApplicationId, x.CallbackUrl, x.ApplicationEventNav.FailedCommandCallbackUrl))
+                .ToList();
         }
 
         public IEnumerable<string> GetTopics()

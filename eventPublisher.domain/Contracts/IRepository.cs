@@ -10,5 +10,6 @@ namespace eventPublisher.domain.contracts
         Task<Application> GetApplicationAsync(long applicationId);
         ApplicationEvent GetApplicationEvent(long applicationId, int eventId);
         IEnumerable<string> GetTopics();
+        IEnumerable<Subscription> GetSubscriptions(int eventId);
     }
 }
