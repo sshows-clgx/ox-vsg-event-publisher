@@ -11,5 +11,6 @@ namespace eventPublisher.domain.contracts
         ApplicationEvent GetApplicationEvent(long applicationId, int eventId);
         IEnumerable<string> GetTopics();
         IEnumerable<Subscription> GetSubscriptions(int eventId);
+        Subscription GetSubscription(long applicationId, int eventId);
     }
 }

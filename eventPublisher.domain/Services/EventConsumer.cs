@@ -17,47 +17,54 @@ namespace eventPublisher.domain.services
     {
         private IRepository _repository;
         private int _httpAttempt;
+        private ConnectionFactory _factory;
+        private string _exchangeName;
 
         public EventConsumer(IRepository repository)
         {
             _repository = repository;
+            _factory = new ConnectionFactory() { HostName = "localhost", Port = Protocols.DefaultProtocol.DefaultPort, DispatchConsumersAsync = true };
+            _exchangeName = "Consumer.PortsUser";
         }
 
         public void ReceiveEvents()
         {
             IEnumerable<string> topics = _repository.GetTopics();
-            var factory = new ConnectionFactory() { HostName = "localhost", Port = Protocols.DefaultProtocol.DefaultPort, DispatchConsumersAsync = true };
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
+            using (var connection = _factory.CreateConnection())
             {
-                Console.WriteLine(" Listening for Topic {0}", topics.First());
-                channel.QueueDeclare(queue: topics.First(), durable: false, exclusive: false, autoDelete: false, arguments: null);
-
-                var consumer = new AsyncEventingBasicConsumer(channel);
-                consumer.Received += async (model, @event) =>
+                using (var channel = connection.CreateModel())
                 {
-                    // get message body
-                    var body = @event.Body;
-                    var message = Encoding.UTF8.GetString(body);
+                    // channel.QueueDeclare(queue: _queue, durable: false, exclusive: false, autoDelete: false, arguments: null);
+                    channel.ExchangeDeclare(exchange: _exchangeName, type: "fanout");
 
-                    // get event
-                    IDictionary<string, object> headers = @event.BasicProperties.Headers;
-                    int eventId = headers.ContainsKey("eventId") ? Convert.ToInt32(headers["eventId"]) : 0; // todo: fail?
-                    Console.WriteLine(" Received {0} for eventId {1}", message, eventId);
+                    var queueName = channel.QueueDeclare().QueueName;
+                    channel.QueueBind(queue: queueName,
+                              exchange: _exchangeName,
+                              routingKey: "");
 
-                    // make callback(s)
-                    IEnumerable<Subscription> subscriptions = _repository.GetSubscriptions(eventId);
-                    foreach (var subscription in subscriptions)
+                    var consumer = new AsyncEventingBasicConsumer(channel);
+                    consumer.Received += async (model, @event) =>
                     {
-                        await HandleSubscriptionAsync(subscription, message).ConfigureAwait(false);
-                    }
-                    channel.BasicAck(deliveryTag: @event.DeliveryTag, multiple: false);
-                };
+                        // get message body
+                        var body = Encoding.UTF8.GetString(@event.Body);
 
-                while (true)
-                {
-                    Thread.Sleep(5000);
-                    channel.BasicConsume(queue: topics.First(), autoAck: false, consumer: consumer);
+                        // get event info
+                        IDictionary<string, object> headers = @event.BasicProperties.Headers;
+                        long applicationId = headers.ContainsKey("applicationId") ? Convert.ToInt64(headers["applicationId"]) : 0; // todo: fail?
+                        int eventId = headers.ContainsKey("eventId") ? Convert.ToInt32(headers["eventId"]) : 0; // todo: fail?
+                        Console.WriteLine(" Received {0} for eventId {1}", body, eventId);
+
+                        // make callback
+                        Subscription subscription = _repository.GetSubscription(applicationId, eventId);
+                        await HandleSubscriptionAsync(subscription, body).ConfigureAwait(false);
+
+                        channel.BasicAck(deliveryTag: @event.DeliveryTag, multiple: false);
+                    };
+
+                    while (true)
+                    {
+                        channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
+                    }
                 }
             }
         }
@@ -65,11 +72,12 @@ namespace eventPublisher.domain.services
         private async Task HandleSubscriptionAsync(Subscription subscription, string message)
         {
             _httpAttempt = 0;
-            while (_httpAttempt < 5)
+            var isComplete = false;
+            while (_httpAttempt < 5 || isComplete)
             {
                 HttpResponseMessage response = await MakeHttpPostAsync(subscription, message).ConfigureAwait(false);
-                if (response.IsSuccessStatusCode) return; // todo: log
-                if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 500) return; // todo: log
+                if (response.IsSuccessStatusCode) isComplete = true; ; // todo: log
+                if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 500) isComplete = true; // todo: log
             }
         }
 

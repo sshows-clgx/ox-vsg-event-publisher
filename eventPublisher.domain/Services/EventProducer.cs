@@ -2,33 +2,45 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using eventPublisher.domain.contracts;
+using eventPublisher.domain.models;
 using RabbitMQ.Client;
 
 namespace eventPublisher.domain.services
 {
     public class EventProducer : IProduceEvents
     {
-        public EventProducer()
+        private IRepository _repository;
+        private ConnectionFactory _factory;
+        public EventProducer(IRepository repository)
         {
+            _repository = repository;
+            _factory = new ConnectionFactory() { HostName = "localhost" };
         }
 
-        public void SendEvent(string topic, int eventId, string data)
+        public void SendEvent(ApplicationEvent applicationEvent, string data)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
+            using (var connection = _factory.CreateConnection())
             {
-                channel.QueueDeclare(queue: topic, durable: false, exclusive: false, autoDelete: false, arguments: null);
+                using (var channel = connection.CreateModel())
+                {
+                    IBasicProperties props = channel.CreateBasicProperties();
+                    props.ContentType = "text/plain";
+                    props.DeliveryMode = 2;
+                    props.Headers = new Dictionary<string, object>();
+                    props.Headers.Add("applicationId", applicationEvent.ApplicationId);
+                    props.Headers.Add("eventId", applicationEvent.EventId);
 
-                var body = Encoding.UTF8.GetBytes(data);
-                IBasicProperties props = channel.CreateBasicProperties();
-                props.ContentType = "text/plain";
-                props.DeliveryMode = 2;
-                props.Headers = new Dictionary<string, object>();
-                props.Headers.Add("eventId", eventId);
+                    IEnumerable<Subscription> subscriptions = _repository.GetSubscriptions(applicationEvent.EventId);
+                    foreach (var subscription in subscriptions)
+                    {
+                        string exchangeName = string.Format("{0}.{1}", subscription.ApplicationName, subscription.TopicName);
+                        channel.ExchangeDeclare(exchangeName, "fanout");
 
-                channel.BasicPublish(exchange: "", routingKey: topic, basicProperties: props, body: body);
-                Console.WriteLine(" [x] Sent {0}", body);
+                        // channel.QueueDeclare(queue: string.Format("{0}.{1}", subscription.ApplicationName, subscription.TopicName), durable: false, exclusive: false, autoDelete: false, arguments: null);
+                        channel.BasicPublish(exchange: exchangeName, routingKey: exchangeName, basicProperties: props, body: Encoding.UTF8.GetBytes(data));
+                        Console.WriteLine("Publishing for {0}", exchangeName);
+                    }
+                }
             }
         }
     }

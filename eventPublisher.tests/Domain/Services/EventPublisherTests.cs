@@ -56,7 +56,7 @@ namespace eventPublisher.tests.domain.services
             // arrange 
             ResetMocks();
             int eventId = 1;
-            ApplicationEvent applicationEvent = new ApplicationEvent(1, eventId, "Topic");
+            ApplicationEvent applicationEvent = new ApplicationEvent(1, "Application", eventId, "Topic");
             var data = new object();
             _repo.Setup(x => x.GetApplicationEvent(It.IsAny<long>(), It.IsAny<int>())).Returns(applicationEvent);
             var target = new EventPublisher(_repo.Object, _producer.Object);
@@ -69,7 +69,7 @@ namespace eventPublisher.tests.domain.services
                 err => { },
                 x =>
                 {
-                    _producer.Verify(s => s.SendEvent(applicationEvent.TopicName, eventId, JsonConvert.SerializeObject(data)), Times.Once);
+                    _producer.Verify(s => s.SendEvent(applicationEvent, JsonConvert.SerializeObject(data)), Times.Once);
                 }
             );
         }
