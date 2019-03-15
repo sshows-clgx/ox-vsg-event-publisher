@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "eventPublisher.angular": {
+    "eventPublisherAdmin": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -23,7 +23,8 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "./node_modules/@swimlane/ngx-datatable/release/themes/material.css"
             ],
             "scripts": []
           },
@@ -123,5 +124,5 @@
       }
     }
   },
-  "defaultProject": "eventPublisher.angular"
+  "defaultProject": "eventPublisherAdmin"
 }

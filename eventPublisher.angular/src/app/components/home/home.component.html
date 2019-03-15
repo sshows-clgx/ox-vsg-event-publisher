@@ -1,0 +1,85 @@
+
+<div class="container">
+  <div>
+   <div class="mt-3 mr-1 ml-1 row">
+			<div class="col-auto mr-auto">
+				<h3 id="SourceHeader">Configurations</h3>
+			</div>
+			<!-- <div class="col-auto">
+				<span id="addSourceSystemButton" class="btn btn-primary btn-sm-text" (click)="addSourceSystemRow()">Add Source System</span>
+			</div> -->
+		</div>
+
+    <div class="mt-3 row">
+      <div class="col">
+        <ngx-datatable #configurationsTable id="configurationsTable" class="material striped expandable"
+          [headerHeight]="50" [limit]="5" [columnMode]="'force'" [footerHeight]="50" [rowHeight]="'auto'"
+          [rows]="configurations" [hidden]="loading">
+
+          <ngx-datatable-row-detail [rowHeight]="100" #myDetailRow>
+            <ng-template let-row="row" let-expanded="expanded" ngx-datatable-row-detail-template>
+              <div style="padding-left:35px;">
+                <div><strong>Subscribers</strong></div>
+                <p *ngFor="let subscriber of row.subscribers"><span style="float: left;">{{subscriber.applicationName}}</span><span style="float: right;">{{subscriber.callbackUrl}}</span></p>
+              </div>
+            </ng-template>
+          </ngx-datatable-row-detail>
+
+          <ngx-datatable-column [width]="50" [resizeable]="false" [sortable]="false" [draggable]="false"
+            [canAutoResize]="false">
+            <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template>
+              <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded"
+                [class.datatable-icon-down]="expanded" title="Expand/Collapse Row" (click)="toggleExpandRow(row)">
+              </a>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column name="Id" prop="eventId" [sortable]="false">
+            <ng-template ngx-datatable-cell-template let-rowIndex="rowIndex" let-value="value" let-row="row">
+              <span>{{value}}</span>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column name="Application" prop="applicationName" [sortable]="false">
+            <ng-template ngx-datatable-cell-template let-rowIndex="rowIndex" let-value="value" let-row="row">
+              <span>{{value}}</span>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column name="Topic" prop="topicName" [sortable]="false">
+            <ng-template ngx-datatable-cell-template let-rowIndex="rowIndex" let-value="value" let-row="row">
+              <span>{{value}}</span>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column name="Event Name" prop="eventName" [sortable]="false">
+            <ng-template ngx-datatable-cell-template let-rowIndex="rowIndex" let-value="value" let-row="row">
+              <span title="Double click to edit" (dblclick)="toggleEditMode[rowIndex + '-eventName'] = true"
+                *ngIf="!toggleEditMode[rowIndex + '-eventName']">{{value}}</span>
+              <input autofocus *ngIf="!row.eventName || toggleEditMode[rowIndex+ '-eventName']" type="text"
+                [value]="value" class="form-control" />
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column name="Publisher Callback URL" prop="publisherCallbackUrl" [sortable]="false">
+            <ng-template ngx-datatable-cell-template let-rowIndex="rowIndex" let-value="value" let-row="row">
+              <span title="Double click to edit" (dblclick)="toggleEditMode[rowIndex + '-publisherCallbackUrl'] = true"
+                *ngIf="!toggleEditMode[rowIndex + '-publisherCallbackUrl']">{{value}}</span>
+              <input autofocus *ngIf="!row.publisherCallbackUrl || toggleEditMode[rowIndex+ '-publisherCallbackUrl']"
+                type="text" [value]="value" class="form-control" />
+            </ng-template>
+          </ngx-datatable-column>
+
+          <!-- <ngx-datatable-column [sortable]="false">
+							<ng-template ngx-datatable-cell-template let-rowIndex="rowIndex" let-value="value" let-row="row">
+								<button type="button" class="btn btn-sm btn-default" title="Delete" aria-hidden="true" (click)="deleteSourceSystem(row, rowIndex)">
+									<span class="glyphicons glyphicons-bin"></span>
+								</button>
+							</ng-template>
+						</ngx-datatable-column> -->
+
+        </ngx-datatable>
+      </div>
+    </div>
+  </div>
+</div>

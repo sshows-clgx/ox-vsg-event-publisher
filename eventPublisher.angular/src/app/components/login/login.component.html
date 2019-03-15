@@ -1,0 +1,17 @@
+<div class="container col-md-6 col-md-offset-3 mt-5">
+	<h2 id="login">Login</h2>
+	<div>
+		<div class="form-group mt-3">
+			<label for="username">Username or Email</label>
+			<input placeholder="Username/Email is required" type="text" class="form-control" id="username" [(ngModel)]="username" />
+		</div>
+		<div class="form-group">
+			<label for="credential">Password</label>
+			<input placeholder="Password is required" type="password" class="form-control" id="credential" [(ngModel)]="credential" (keyup.enter)="submit()"
+			/>
+		</div>
+		<div class="form-group">
+			<button id="loginButton" class="btn btn-primary" (click)="submit()" [disabled]="!username || !credential">Login</button>
+		</div>
+	</div>
+</div>
