@@ -35,6 +35,7 @@ namespace eventPublisher.web
             services.AddTransient<IRepository, EventPublisherRepository>();
             services.AddTransient<IConsumeEvents, EventConsumer>();
             services.AddTransient<IProduceEvents, EventProducer>();
+            services.AddTransient<IManageConfigurations, AdminService>();
             services.AddDbContext<IContext, EventPublisherContext>(options => options.UseNpgsql("User ID=admin;Password=admin;Host=localhost;Port=5432;Database=EventPublisher"));
             services.AddTransient<IPublishEvents, EventPublisher>();
             services.AddMvc().AddXmlSerializerFormatters();
@@ -75,7 +76,15 @@ namespace eventPublisher.web
             });
 
             app.UseStaticFiles();
-            app.UseMvc();
+
+            // MVC routes // must do this last
+			app.UseMvc(routes =>
+			{
+				routes.MapRoute(
+					name: "default",
+					template: "{*anything}",
+					defaults: new { controller = "Home", action = "Index" });
+			});
         }
     }
 }

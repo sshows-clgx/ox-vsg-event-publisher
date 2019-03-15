@@ -11,7 +11,7 @@ namespace eventPublisher.data.entities
         public string Name { get; set; }
         public int TopicId { get; set; }
         public long ApplicationId { get; set; }
-        public string FailedCommandCallbackUrl { get; set; }
+        public string PublisherCallbackUrl { get; set; }
         public DateTime InsertedUtc { get; set; }
 
         [ForeignKey("ApplicationId")]

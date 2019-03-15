@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using eventPublisher.data;
 using eventPublisher.data.entities;
+using eventPublisher.domain.dataTransferObjects;
 using eventPublisher.domain.models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace eventPublisher.tests.data
@@ -14,7 +16,7 @@ namespace eventPublisher.tests.data
     public class EventPublisherRepositoryTests
     {
         [Fact]
-        public void EventPublisherRepository_ctor_requiresContext()
+        public void EventPublisherRepository_ctor_RequiresContext()
         {
             // act & asert
             Assert.Throws<ArgumentNullException>(() => new EventPublisherRepository((EventPublisherContext)null));
@@ -209,6 +211,95 @@ namespace eventPublisher.tests.data
 
             // assert
             Assert.Equal(2, result.Count());
+        }
+
+        [Fact]
+        public async Task EventPublisherRepository_GetConfigurationsAync_ReturnsConfigurations()
+        {
+            // arrange
+            EventPublisherContext context = GetContext();
+
+            // applications
+            var publisherId = context.Applications.Add(new ApplicationEntity
+            {
+                Name = "Application 1",
+            }).Entity.ApplicationId;
+            var subscriberId = context.Applications.Add(new ApplicationEntity
+            {
+                Name = "Subscriber"
+            }).Entity.ApplicationId;
+
+            // topic
+            var topicId = context.Topics.Add(new TopicEntity
+            {
+                Name = "Test",
+            }).Entity.TopicId;
+
+            // events
+            var eventId1 = context.ApplicationEvents.Add(new ApplicationEventEntity
+            {
+                ApplicationId = publisherId,
+                Name = "Test",
+                TopicId = topicId,
+                PublisherCallbackUrl = "https://google.com"
+            }).Entity.EventId;
+            var eventId2 = context.ApplicationEvents.Add(new ApplicationEventEntity
+            {
+                ApplicationId = publisherId,
+                Name = "Test2",
+                TopicId = topicId
+            }).Entity.EventId;
+
+            // subscriptions
+            context.Subscriptions.Add(new SubscriptionEntity
+            {
+                ApplicationId = publisherId,
+                EventId = eventId1,
+                CallbackUrl = "https://google.com"
+            });
+            context.Subscriptions.Add(new SubscriptionEntity
+            {
+                ApplicationId = subscriberId,
+                EventId = eventId1,
+                CallbackUrl = "https://google.com"
+            });
+            context.Subscriptions.Add(new SubscriptionEntity
+            {
+                ApplicationId = subscriberId,
+                EventId = eventId2,
+                CallbackUrl = "https://google.com"
+            });
+
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            var target = new EventPublisherRepository(context);
+            var expectedDto1 = new ConfigurationDto
+            {
+                EventId = eventId1,
+                EventName = "Test",
+                ApplicationId = publisherId,
+                ApplicationName = "Application 1",
+                TopicId = topicId,
+                TopicName = "Test",
+                PublisherCallbackUrl = "https://google.com",
+                Subscribers = new List<SubscriptionDto> {
+                    new SubscriptionDto {
+                        ApplicationName = "Application 1",
+                        CallbackUrl = "https://google.com",
+                    },
+                    new SubscriptionDto {
+                        ApplicationName = "Subscriber",
+                        CallbackUrl = "https://google.com",
+                    }
+                }
+            };
+
+            // act
+            IEnumerable<ConfigurationDto> result = await target.GetConfigurationsAync();
+
+            // assert
+            Assert.Equal(2, result.Count());
+            var dto = result.Single(x => x.EventId == eventId1);
+            Assert.Equal(JsonConvert.SerializeObject(expectedDto1), JsonConvert.SerializeObject(dto));
         }
 
         private EventPublisherContext GetContext()
